@@ -20,6 +20,7 @@
 #include <Servo.h>
 #include <Wire.h>
 #include <MMA8653.h>
+#include <MPU6050.h>
 //#include <MsTimer2.h>
 #include "Studuino.h"
 
@@ -155,7 +156,8 @@ uint64_t group[KOTAISUU];
 uint64_t top;
 byte worst;
 byte bad;
-double point, point_temp, point_first, point_second, point_T, point2;
+double point,  point_first, point_second, point_T, point2;
+int64_t point_temp;
 int count;
 byte flag = 0;
 byte flag_mtop = 0;
@@ -198,13 +200,13 @@ byte port[8];
 void artecRobotSetup() {
   board.InitSensorPort(PORT_A0, PORT_A1, PIDULTRASONICSENSOR);
   board.InitSensorPort(PORT_A2, PIDLED);
-  board.InitI2CPort(PIDGYROSCOPE);
+  //board.InitI2CPort(PIDGYROSCOPE);
   board.InitDCMotorPort(PORT_M1);
   board.InitDCMotorPort(PORT_M2);
   board.InitServomotorPort(PORT_D10);
   board.InitServomotorPort(PORT_D11);
   board.InitServomotorPort(PORT_D12);
-//  board.InitI2CPort(PIDGYROSCOPE);
+  board.InitI2CPort(PIDGYROSCOPE);
   board.SetServomotorCalibration(CalibrationData);
 }
 // ---------------------------------------
@@ -233,6 +235,11 @@ void artecRobotMain() {
   port[1] = PORT_D11; // 膝
   port[2] = PORT_D12; // かかと
 //  range = SYNCSVRANGE(scratchRound(20-20))+3;
+/*  for(i = 0; i < 100; i++){
+  delay(300);
+      int gyro_value = board.GetGyroscopeValue(GX_AXIS);
+    Serial.println(gyro_value);
+  }*/
   range = 0;
 
   // 初期個体を出鱈目に生成する
@@ -291,20 +298,28 @@ void artecRobotMain() {
 
 void play(uint64_t gene_fixed) {
   prepare();
-  point = 400;
+  point = -50000;
   gene = gene_fixed;
   point_temp = 0;
   for(j=0; j<GENE_LEN; j++){
     foot();
-    double gyro_value = board.GetGyroscopeValue(GX_AXIS);
-    Serial.println(gyro_value);
-    point_temp += 1.0/abs(gyro_value/10);
+    int gyro_value = board.GetGyroscopeValue(GX_AXIS);
+    gyro_value = abs(gyro_value);
+    point_temp += gyro_value;
 
   }
   for(j = 0; j < 10; j++){
     delay(300);
-    point_temp += 1.0/abs(board.GetGyroscopeValue(GX_AXIS)/10);
+    int gyro_value = board.GetGyroscopeValue(GX_AXIS);
+    gyro_value = abs(gyro_value);
+    point_temp += gyro_value;
+    Serial.println(gyro_value);
   }
+  if(point_temp < 0.1) point_temp = 0.1;
+  //point_temp = 1000.0/point_temp;
+  point_temp = -point_temp;
+  
+ // Serial.println(point_temp);
   if (point < point_temp){
     point = point_temp;
   }

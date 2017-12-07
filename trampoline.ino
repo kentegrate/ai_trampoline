@@ -98,14 +98,14 @@ const byte SVCD12 = (3);
 #define T_MAX 2000
 #define POINT_MIN 0
 #define POINT_MAX 45
-#define A_MIN 60
-#define A_MAX 90
+#define A_MIN 70
+#define A_MAX 100
 #define A_INIT 90
-#define B_MIN 60
+#define B_MIN 40
 #define B_MAX 90
 #define B_INIT 90
-#define C_MIN 75
-#define C_MAX 105
+#define C_MIN 65
+#define C_MAX 115
 #define C_INIT 90
 #define MAX_CHILD 100
 #define HENI_TIMES 10
@@ -204,7 +204,7 @@ void artecRobotSetup() {
   board.InitServomotorPort(PORT_D10);
   board.InitServomotorPort(PORT_D11);
   board.InitServomotorPort(PORT_D12);
-  board.InitI2CPort(PIDGYROSCOPE);
+//  board.InitI2CPort(PIDGYROSCOPE);
   board.SetServomotorCalibration(CalibrationData);
 }
 // ---------------------------------------
@@ -244,7 +244,7 @@ void artecRobotMain() {
     children[child_number] = group[i];
     play(group[i]);
     seiseki_group[i] = point;
-    if (seiseki_group[i] < 1) seiseki_group[i] = 1;
+//    if (seiseki_group[i] < 1) seiseki_group[i] = 1;//comment out by Ken Takaki
   }
   find_top();
 
@@ -293,18 +293,30 @@ void play(uint64_t gene_fixed) {
   prepare();
   point = 400;
   gene = gene_fixed;
+  point_temp = 0;
   for(j=0; j<GENE_LEN; j++){
     foot();
-    point_temp = ULTRASONIC_SENSOR();
-    if(point > point_temp) point = point_temp;
+    double gyro_value = board.GetGyroscopeValue(GX_AXIS);
+    Serial.println(gyro_value);
+    point_temp += 1.0/abs(gyro_value/10);
+
   }
+  for(j = 0; j < 10; j++){
+    delay(300);
+    point_temp += 1.0/abs(board.GetGyroscopeValue(GX_AXIS)/10);
+  }
+  if (point < point_temp){
+    point = point_temp;
+  }
+
 }
 
 void foot(void) {
-  byte next_servo[3];
+  byte next_servo[3];	
   next_servo[0] = gene & 0x01 ? SVRANGE(A_MAX) : SVRANGE(A_MIN);
   next_servo[1] = (gene>> GENE_LEN ) & 0x01 ? SVRANGE(B_MAX) : SVRANGE(B_MIN);
   next_servo[2] = (gene>> GENE_LEN * 2) & 0x01 ? SVRANGE(C_MAX) : SVRANGE(C_MIN);
+  
   board.SyncServomotors(port, next_servo, 3, range);
   gene = gene >> 1; //1ビット右にシフト
   flag = 1;
@@ -374,7 +386,7 @@ void crossing(void) {
   front = pow(2, GENE_LEN) - pow(2, pos);
   behind = ~ front;
 
-  child[0] = front & frist + behind & second;
+  child[0] = front & first + behind & second;
   child[1] = front & second + behind & first;
 }
 

@@ -108,7 +108,7 @@ const byte SVCD12 = (3);
 #define C_MIN 65
 #define C_MAX 115
 #define C_INIT 90
-#define MAX_CHILD 100
+#define MAX_CHILD 500
 #define HENI_TIMES 10
 #define BASIC_INTERVAL 200
 
@@ -174,6 +174,7 @@ byte count_heni;
 double maximum, maximum_reverse;
 double roulette;
 //double middle;
+//int generation = 0;
 
 // **********************************************************************
 // プログラム
@@ -235,11 +236,11 @@ void artecRobotMain() {
   port[1] = PORT_D11; // 膝
   port[2] = PORT_D12; // かかと
 //  range = SYNCSVRANGE(scratchRound(20-20))+3;
-  for(i = 0; i < 100; i++){
-    delay(300);
-    int gyro_value = board.GetGyroscopeValue(GX_AXIS);
-    Serial.println(gyro_value);
-  }
+//  for(i = 0; i < 100; i++){
+//    delay(300);
+//    int gyro_value = board.GetGyroscopeValue(GX_AXIS);
+//    Serial.println(gyro_value);
+//  }
   range = 0;
 
   // 初期個体を出鱈目に生成する
@@ -251,13 +252,15 @@ void artecRobotMain() {
     children[child_number] = group[i];
     play(group[i]);
     seiseki_group[i] = point;
-    if (seiseki_group[i] < 1) seiseki_group[i] = 1;//comment out by Ken Takaki
+    if (seiseki_group[i] < 1) seiseki_group[i] = 1; //comment out by Ken Takaki
   }
   find_top();
 
   while (child_number < MAX_CHILD) {
-    Serial.print("child_number = ");
-    Serial.print(child_number); 
+//    Serial.print("generation: ");
+//    Serial.print(generation);
+//    Serial.print("child_number = ");
+//    Serial.print(child_number);
     first = choose_parents();
     second = choose_parents();
     while (first == second) second = choose_parents();
@@ -275,7 +278,7 @@ void artecRobotMain() {
      child_number++;
      children[child_number] = child[i];
      play(child[i]);
-     seiseki_child[i] = point;// - middle;
+     seiseki_child[i] = point; // - middle;
      if (seiseki_child[i] < 1) seiseki_child[i] = 1;
    }
     comparison();
@@ -286,6 +289,8 @@ void artecRobotMain() {
     group[bad] = child[1];
     seiseki_group[worst] = seiseki_child[0];
     seiseki_group[bad] = seiseki_child[1];
+
+//    generation++;
   }
 
    board.LED(PORT_A2, ON);
@@ -306,7 +311,7 @@ void play(int gene_fixed) {
     int gyro_value = board.GetGyroscopeValue(GX_AXIS);
     gyro_value = abs(gyro_value);
     point_temp += gyro_value;
-
+    delay(80);
   }
   for(j = 0; j < 10; j++){
     delay(300);
@@ -316,14 +321,14 @@ void play(int gene_fixed) {
     Serial.println(gyro_value);
   }
   if(point_temp < 0.1) point_temp = 0.1;
-  //point_temp = 1000.0/point_temp;
-  point_temp = -point_temp;
+  //  point_temp = 1000.0/point_temp;
+  //  point_temp = -point_temp;
   
-//  Serial.println(point_temp);
   if (point < point_temp){
     point = point_temp;
   }
-
+  Serial.print("point: ");
+  Serial.print(point);
 }
 
 void foot(void) {
@@ -341,10 +346,17 @@ void prepare(void) {
   board.Servomotor(PORT_D10, SVRANGE(A_INIT));
   board.Servomotor(PORT_D11, SVRANGE(B_INIT));
   board.Servomotor(PORT_D12, SVRANGE(C_INIT));
+
+//  byte servo[3];
+//  servo[0] = SVRANGE(A_INIT);
+//  servo[1] = SVRANGE(B_INIT);
+//  servo[2] = SVRANGE(C_INIT);
+//  board.SyncServomotors(port, servo, 3, 0);
+
   count = 0;
   count_heni = 0;
   point_temp = 0;
-  delay(3000);
+  delay(5000);
 }
 
 void find_top(void) {

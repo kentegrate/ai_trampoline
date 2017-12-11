@@ -140,20 +140,20 @@ void artecRobotMain();
 // グローバル変数
 // **********************************************************************
 Studuino board; // Studuino基板オブジェクト
-//uint64_t StartTime;  // For timer
+//int StartTime;  // For timer
 bool IRRemoteUsed = false;  // 赤外線受信センサ使用中フラグ
 bool BeepOn = false;
 bool DCMotorOn = false;
 
 //変数宣言
-//uint64_t T, t1, t2, T_first, T_second; //周期
+//int T, t1, t2, T_first, T_second; //周期
 byte i,j;
-uint64_t first; //1位個体
-uint64_t second; //2位個体
-uint64_t child[2]; //子個体
-uint64_t gene; //実行中個体
-uint64_t group[KOTAISUU];
-uint64_t top;
+int first; //1位個体
+int second; //2位個体
+int child[2]; //子個体
+int gene; //実行中個体
+int group[KOTAISUU];
+int top;
 byte worst;
 byte bad;
 double point,  point_first, point_second, point_T, point2;
@@ -167,7 +167,7 @@ double seiseki_reverse[KOTAISUU];
 double seiseki_top;
 byte pos;
 byte child_number; //何番目の個体かを表す変数
-uint64_t children[MAX_CHILD]; //個体記録用変数
+int children[MAX_CHILD]; //個体記録用変数
 //byte degreee[2][2][2][3];
 byte range;
 byte count_heni;
@@ -214,14 +214,14 @@ void artecRobotSetup() {
 // ---------------------------------------
 
 //関数宣言
-void play(uint64_t);
+void play(int);
 void foot(void);
 void prepare(void);
 void find_top(void);
-uint64_t choose_parents(void);
+int choose_parents(void);
 void crossing(void);
-uint64_t child_overlap(uint64_t);
-uint64_t heni(uint64_t);
+int child_overlap(int);
+int heni(int);
 byte choose_worst(void);
 void comparison(void);
 
@@ -235,11 +235,11 @@ void artecRobotMain() {
   port[1] = PORT_D11; // 膝
   port[2] = PORT_D12; // かかと
 //  range = SYNCSVRANGE(scratchRound(20-20))+3;
-/*  for(i = 0; i < 100; i++){
-  delay(300);
-      int gyro_value = board.GetGyroscopeValue(GX_AXIS);
+  for(i = 0; i < 100; i++){
+    delay(300);
+    int gyro_value = board.GetGyroscopeValue(GX_AXIS);
     Serial.println(gyro_value);
-  }*/
+  }
   range = 0;
 
   // 初期個体を出鱈目に生成する
@@ -251,7 +251,7 @@ void artecRobotMain() {
     children[child_number] = group[i];
     play(group[i]);
     seiseki_group[i] = point;
-//    if (seiseki_group[i] < 1) seiseki_group[i] = 1;//comment out by Ken Takaki
+    if (seiseki_group[i] < 1) seiseki_group[i] = 1;//comment out by Ken Takaki
   }
   find_top();
 
@@ -296,7 +296,7 @@ void artecRobotMain() {
 // Artec robot subroutine
 // ---------------------------------------
 
-void play(uint64_t gene_fixed) {
+void play(int gene_fixed) {
   prepare();
   point = -50000;
   gene = gene_fixed;
@@ -319,7 +319,7 @@ void play(uint64_t gene_fixed) {
   //point_temp = 1000.0/point_temp;
   point_temp = -point_temp;
   
- // Serial.println(point_temp);
+//  Serial.println(point_temp);
   if (point < point_temp){
     point = point_temp;
   }
@@ -358,7 +358,7 @@ void find_top(void) {
   }
 }
 
-uint64_t choose_parents(void) {
+int choose_parents(void) {
   maximum = 0;
   for (i=0; i<KOTAISUU; i++) maximum += seiseki_group[i] * 10;
   roulette = (double) random(maximum);
@@ -370,7 +370,7 @@ uint64_t choose_parents(void) {
 }
 
 void crossing(void) {
-  uint64_t front, behind;
+  int front, behind;
   pos = random(GENE_LEN - 1);
 //  switch (pos) {
 //    case 0:
@@ -405,7 +405,7 @@ void crossing(void) {
   child[1] = front & second + behind & first;
 }
 
-uint64_t child_overlap(uint64_t child) {
+int child_overlap(int child) {
   int i;
   for (i=0; i<=child_number; i++) {
     if (children[i] == child) return 1;
@@ -413,7 +413,7 @@ uint64_t child_overlap(uint64_t child) {
   return 0;
 }
 
-uint64_t heni(uint64_t child) {
+int heni(int child) {
   return child ^ (0x0101 << random(GENE_LEN));
 }
 

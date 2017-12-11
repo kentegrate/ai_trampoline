@@ -329,6 +329,9 @@ void play(int gene_fixed) {
   if (point < point_temp){
     point = point_temp;
   }
+  Serial.print("gene: ");
+  Serial.print(gene, BIN);
+  Serial.print("\n");
   Serial.print("point: ");
   Serial.print(point);
   Serial.print("\n");

@@ -157,7 +157,7 @@ int top;
 byte worst;
 byte bad;
 double point,  point_first, point_second, point_T, point2;
-int64_t point_temp;
+int point_temp;
 int count;
 byte flag = 0;
 byte flag_mtop = 0;

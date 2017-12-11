@@ -259,6 +259,7 @@ void artecRobotMain() {
   while (child_number < MAX_CHILD) {
     Serial.print("generation: ");
     Serial.print(generation);
+    Serial.print("\n");
 //    Serial.print("child_number = ");
 //    Serial.print(child_number);
     first = choose_parents();
@@ -310,14 +311,15 @@ void play(int gene_fixed) {
     foot();
     int gyro_value = board.GetGyroscopeValue(GX_AXIS);
     gyro_value = abs(gyro_value);
-    point_temp += gyro_value;
+    Serial.println(gyro_value);
+    point_temp += gyro_value / 100;
     delay(80);
   }
   for(j = 0; j < 10; j++){
     delay(300);
     int gyro_value = board.GetGyroscopeValue(GX_AXIS);
     gyro_value = abs(gyro_value);
-    point_temp += gyro_value;
+    point_temp += gyro_value / 100;
     Serial.println(gyro_value);
   }
   if(point_temp < 0.1) point_temp = 0.1;
@@ -329,6 +331,7 @@ void play(int gene_fixed) {
   }
   Serial.print("point: ");
   Serial.print(point);
+  Serial.print("\n");
 }
 
 void foot(void) {

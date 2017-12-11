@@ -108,7 +108,7 @@ const byte SVCD12 = (3);
 #define C_MIN 65
 #define C_MAX 115
 #define C_INIT 90
-#define MAX_CHILD 500
+#define MAX_CHILD 100
 #define HENI_TIMES 10
 #define BASIC_INTERVAL 200
 
@@ -174,7 +174,7 @@ byte count_heni;
 double maximum, maximum_reverse;
 double roulette;
 //double middle;
-//int generation = 0;
+int generation = 0;
 
 // **********************************************************************
 // プログラム
@@ -257,8 +257,8 @@ void artecRobotMain() {
   find_top();
 
   while (child_number < MAX_CHILD) {
-//    Serial.print("generation: ");
-//    Serial.print(generation);
+    Serial.print("generation: ");
+    Serial.print(generation);
 //    Serial.print("child_number = ");
 //    Serial.print(child_number);
     first = choose_parents();
@@ -290,7 +290,7 @@ void artecRobotMain() {
     seiseki_group[worst] = seiseki_child[0];
     seiseki_group[bad] = seiseki_child[1];
 
-//    generation++;
+    generation++;
   }
 
    board.LED(PORT_A2, ON);

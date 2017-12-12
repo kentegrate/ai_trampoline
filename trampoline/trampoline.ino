@@ -108,7 +108,7 @@ const byte SVCD12 = (3);
 #define C_MIN 65
 #define C_MAX 115
 #define C_INIT 90
-#define MAX_CHILD 100
+#define MAX_CHILD 60
 #define HENI_TIMES 10
 #define BASIC_INTERVAL 200
 
@@ -148,12 +148,12 @@ bool DCMotorOn = false;
 //変数宣言
 //int T, t1, t2, T_first, T_second; //周期
 byte i,j;
-int first; //1位個体
-int second; //2位個体
-int child[2]; //子個体
-int gene; //実行中個体
-int group[KOTAISUU];
-int top;
+unsigned long first; //1位個体
+unsigned long second; //2位個体
+unsigned long child[2]; //子個体
+unsigned long gene; //実行中個体
+unsigned long group[KOTAISUU];
+unsigned long top;
 byte worst;
 byte bad;
 double point,  point_first, point_second, point_T, point2;
@@ -167,7 +167,7 @@ double seiseki_reverse[KOTAISUU];
 double seiseki_top;
 byte pos;
 byte child_number; //何番目の個体かを表す変数
-int children[MAX_CHILD]; //個体記録用変数
+unsigned long children[MAX_CHILD]; //個体記録用変数
 //byte degreee[2][2][2][3];
 byte range;
 byte count_heni;
@@ -215,14 +215,14 @@ void artecRobotSetup() {
 // ---------------------------------------
 
 //関数宣言
-void play(int);
+void play(unsigned long);
 void foot(void);
 void prepare(void);
 void find_top(void);
-int choose_parents(void);
+unsigned long choose_parents(void);
 void crossing(void);
-int child_overlap(int);
-int heni(int);
+int child_overlap(unsigned long);
+unsigned long heni(unsigned long);
 byte choose_worst(void);
 void comparison(void);
 
@@ -244,7 +244,10 @@ void artecRobotMain() {
   range = 0;
 
   // 初期個体を出鱈目に生成する
-  for (i=0; i<KOTAISUU; i++) group[i] = (random(pow(2, GENE_LEN)) << GENE_LEN * 2) + (random(pow(2, GENE_LEN)) << GENE_LEN) + random(pow(2, GENE_LEN));
+  for (i=0; i<KOTAISUU; i++) {
+    group[i] = random(pow(2, GENE_LEN)) + (random(pow(2, GENE_LEN)) << GENE_LEN) + (random(pow(2, GENE_LEN)) << GENE_LEN * 2);
+    Serial.println(group[i], BIN);
+  }
 
   //group実行
   for (i=0; i<KOTAISUU; i++) {
@@ -273,6 +276,7 @@ void artecRobotMain() {
        if (count_heni < HENI_TIMES) {
          child[i] = heni(child[i]);
        } else child[i]++;
+       child[i] = 0b00000000111111111111111111111111 & child[i];
      }
 
      //child実行  
@@ -302,38 +306,43 @@ void artecRobotMain() {
 // Artec robot subroutine
 // ---------------------------------------
 
-void play(int gene_fixed) {
+void play(unsigned long gene_fixed) {
   prepare();
-  point = -50000;
-  gene = gene_fixed;
+  point = 0;
   point_temp = 0;
+  gene = gene_fixed;
+  Serial.print("gene: ");
+  Serial.print(gene_fixed, BIN);
+  Serial.print("\n");
+
   for(j=0; j<GENE_LEN; j++){
     foot();
-    int gyro_value = board.GetGyroscopeValue(GX_AXIS);
-    gyro_value = abs(gyro_value);
-    Serial.println(gyro_value);
-    point_temp += gyro_value / 100;
-    delay(80);
+//    int gyro_value = board.GetGyroscopeValue(GX_AXIS);
+//    gyro_value = abs(gyro_value);
+    for (int i = 0; i < 5; ++i) {
+      point_temp = ULTRASONIC_SENSOR();
+      if (point_temp > 30) continue;
+      if (point < point_temp){
+        point = point_temp;
+      }
+      delay(1);
+    }
   }
   for(j = 0; j < 10; j++){
-    delay(300);
-    int gyro_value = board.GetGyroscopeValue(GX_AXIS);
-    gyro_value = abs(gyro_value);
-    point_temp += gyro_value / 100;
-    Serial.println(gyro_value);
+    point_temp = ULTRASONIC_SENSOR();
+    if (point_temp > 30) continue;
+    if (point < point_temp){
+      point = point_temp;
+    }
+    delay(80);
   }
-  if(point_temp < 0.1) point_temp = 0.1;
+//  if(point_temp < 0.1) point_temp = 0.1;
   //  point_temp = 1000.0/point_temp;
   //  point_temp = -point_temp;
   
-  if (point < point_temp){
-    point = point_temp;
-  }
-  Serial.print("gene: ");
-  Serial.print(gene, BIN);
-  Serial.print("\n");
   Serial.print("point: ");
   Serial.print(point);
+  Serial.print("\n");
   Serial.print("\n");
 }
 
@@ -374,9 +383,15 @@ void find_top(void) {
       seiseki_top = seiseki_group[i];
     }
   }
+  Serial.print("top: ");
+  Serial.print(top, BIN);
+  Serial.print("\n");
+  Serial.print("seiseki top: ");
+  Serial.print(seiseki_top);
+  Serial.print("\n");
 }
 
-int choose_parents(void) {
+unsigned long choose_parents(void) {
   maximum = 0;
   for (i=0; i<KOTAISUU; i++) maximum += seiseki_group[i] * 10;
   roulette = (double) random(maximum);
@@ -388,8 +403,8 @@ int choose_parents(void) {
 }
 
 void crossing(void) {
-  int front, behind;
-  pos = random(GENE_LEN - 1);
+  unsigned long front, behind;
+  pos = random(GENE_LEN * 3 - 1);
 //  switch (pos) {
 //    case 0:
 //      front = 0x8080; //10000000
@@ -416,22 +431,22 @@ void crossing(void) {
 //      Serial.println("crossing error");
 //      break;
 //  }
-  front = pow(2, GENE_LEN) - pow(2, pos);
+  front = pow(2, GENE_LEN * 3) - pow(2, pos);
   behind = ~ front;
-
-  child[0] = front & first + behind & second;
-  child[1] = front & second + behind & first;
+  behind = 0b00000000111111111111111111111111 & behind;
+  child[0] = front & first | behind & second;
+  child[1] = front & second | behind & first;
 }
 
-int child_overlap(int child) {
+int child_overlap(unsigned long child) {
   int i;
-  for (i=0; i<=child_number; i++) {
+  for (i=0; i<child_number; i++) {
     if (children[i] == child) return 1;
   }
   return 0;
 }
 
-int heni(int child) {
+unsigned long heni(unsigned long child) {
   return child ^ (0x0101 << random(GENE_LEN));
 }
 

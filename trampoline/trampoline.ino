@@ -44,39 +44,13 @@ typedef cell_t cell;
 //
 #define BMIN    (0)     // Blockプログラミング環境側のセンサーの最小値
 #define BMAX    (100)   // Blockプログラミング環境側のセンサーの最大値
-//#define ANAMIN  (0)     // Studuino基板のアナログセンサーの最小値
-//#define ANAMAX  (1023)  // Studuino基板のアナログセンサーの最大値
+
 #define ACCMIN  (-128)  // Studuino基板の加速度センサーの最小値
 #define ACCMAX  (127)   // Studuino基板の加速度センサーの最大値
-//#define PUSHSWITCH(port)       (board.GetPushSwitchValue(port))
-//#define TOUCH_SENSOR(port)     (board.GetTouchSensorValue(port))
-//#define LIGHT_SENSOR(port)     (map(board.GetLightSensorValue(port), ANAMIN, ANAMAX, BMIN, BMAX))
-//#define SOUND_SENSOR(port)     (map(board.GetSoundSensorValue(port), ANAMIN, ANAMAX, BMIN, BMAX))
-//#define IRPHOTOREFLECTOR(port) (map(board.GetIRPhotoreflectorValue(port), ANAMIN, ANAMAX, BMIN, BMAX))
+
 #define ULTRASONIC_SENSOR()    (GetUltrasonicSensorValue())
 #define DWEIGHT  (1.818)
 
-//
-//const byte SQRT  =  (0);   // √n
-//const byte ABS   =  (1);   // |n|
-//const byte SIN   =  (2);   // sin(n)
-//const byte COS   =  (3);   // cos(n)
-//const byte TAN   =  (4);   // tan(n)
-//const byte LN    =  (5);   // loge
-//const byte LOG   =  (6);   // log10
-//const byte POWE  =  (7);   // e^
-//const byte POW10 =  (8);   // 10^
-//
-//const word BTONE[] = {
-//  BZR_C3,  BZR_CS3, BZR_D3,  BZR_DS3, BZR_E3,  BZR_F3,  BZR_FS3, BZR_G3,  BZR_GS3, BZR_A3,  BZR_AS3, BZR_B3,
-//  BZR_C4,  BZR_CS4, BZR_D4,  BZR_DS4, BZR_E4,  BZR_F4,  BZR_FS4, BZR_G4,  BZR_GS4, BZR_A4,  BZR_AS4, BZR_B4,
-//  BZR_C5,  BZR_CS5, BZR_D5,  BZR_DS5, BZR_E5,  BZR_F5,  BZR_FS5, BZR_G5,  BZR_GS5, BZR_A5,  BZR_AS5, BZR_B5,
-//  BZR_C6,  BZR_CS6, BZR_D6,  BZR_DS6, BZR_E6,  BZR_F6,  BZR_FS6, BZR_G6,  BZR_GS6, BZR_A6,  BZR_AS6, BZR_B6,
-//  BZR_C7,  BZR_CS7, BZR_D7,  BZR_DS7, BZR_E7,  BZR_F7,  BZR_FS7, BZR_G7,  BZR_GS7, BZR_A7,  BZR_AS7, BZR_B7,
-//  BZR_C8,
-//};
-//#define TONENUM ((sizeof(BTONE)/sizeof(word))-1)
-//#define BHZ(num)  (BTONE[(byte)(min(max(0, (num-48)),TONENUM))])
 
 // for Servomotor calibration
 const byte SVCD2  = (4);
@@ -115,22 +89,6 @@ const byte SVCD12 = (3);
 // **********************************************************************
 // プロトタイプ宣言
 // **********************************************************************
-// リスト
-int listDelete(struct cell_t* p, int pos);              // リストの要素を削除
-int listAdd(struct cell_t* p, float data);              // リストに要素を追加
-int listInsert(struct cell_t *p, int pos, float data);  // リストに要素を挿入
-int listReplace(struct cell_t *p, int pos, float data); // リストの要素を置き換える
-int listLength(struct cell_t *p);                       // リストの長さを取得
-float listItem(struct cell_t *p, int pos);              // リストの要素を取得
-bool listIsContain(struct cell_t *p, float data);       // リストにデータが含まれるかどうかの確認
-// 丸め処理
-int scratchRound(float arg);
-//// 数学処理
-float math(byte opeID, float arg);              // 算術処理
-//// タイマー処理関数
-void resetTimer();
-float getTimer();
-
 // ロボットセットアップ処理
 void artecRobotSetup();
 // ロボットメイン処理
@@ -146,7 +104,6 @@ bool BeepOn = false;
 bool DCMotorOn = false;
 
 //変数宣言
-//int T, t1, t2, T_first, T_second; //周期
 byte i,j;
 unsigned long first; //1位個体
 unsigned long second; //2位個体
@@ -168,12 +125,11 @@ double seiseki_top;
 byte pos;
 byte child_number; //何番目の個体かを表す変数
 unsigned long children[MAX_CHILD]; //個体記録用変数
-//byte degreee[2][2][2][3];
+
 byte range;
 byte count_heni;
 double maximum, maximum_reverse;
 double roulette;
-//double middle;
 int generation = 0;
 
 // **********************************************************************
@@ -201,7 +157,6 @@ byte port[8];
 void artecRobotSetup() {
   board.InitSensorPort(PORT_A0, PORT_A1, PIDULTRASONICSENSOR);
   board.InitSensorPort(PORT_A2, PIDLED);
-  //board.InitI2CPort(PIDGYROSCOPE);
   board.InitDCMotorPort(PORT_M1);
   board.InitDCMotorPort(PORT_M2);
   board.InitServomotorPort(PORT_D10);
@@ -235,12 +190,6 @@ void artecRobotMain() {
   port[0] = PORT_D10; // 足の付け根
   port[1] = PORT_D11; // 膝
   port[2] = PORT_D12; // かかと
-//  range = SYNCSVRANGE(scratchRound(20-20))+3;
-//  for(i = 0; i < 100; i++){
-//    delay(300);
-//    int gyro_value = board.GetGyroscopeValue(GX_AXIS);
-//    Serial.println(gyro_value);
-//  }
   range = 0;
 
   // 初期個体を出鱈目に生成する
@@ -263,8 +212,6 @@ void artecRobotMain() {
     Serial.print("generation: ");
     Serial.print(generation);
     Serial.print("\n");
-//    Serial.print("child_number = ");
-//    Serial.print(child_number);
     first = choose_parents();
     second = choose_parents();
     while (first == second) second = choose_parents();
@@ -317,8 +264,6 @@ void play(unsigned long gene_fixed) {
 
   for(j=0; j<GENE_LEN; j++){
     foot();
-//    int gyro_value = board.GetGyroscopeValue(GX_AXIS);
-//    gyro_value = abs(gyro_value);
     for (int i = 0; i < 5; ++i) {
       point_temp = ULTRASONIC_SENSOR();
       if (point_temp > 30) continue;
@@ -336,9 +281,6 @@ void play(unsigned long gene_fixed) {
     }
     delay(80);
   }
-//  if(point_temp < 0.1) point_temp = 0.1;
-  //  point_temp = 1000.0/point_temp;
-  //  point_temp = -point_temp;
   
   if (point < point_temp){
     point = point_temp;
@@ -367,12 +309,6 @@ void prepare(void) {
   board.Servomotor(PORT_D10, SVRANGE(A_INIT));
   board.Servomotor(PORT_D11, SVRANGE(B_INIT));
   board.Servomotor(PORT_D12, SVRANGE(C_INIT));
-
-//  byte servo[3];
-//  servo[0] = SVRANGE(A_INIT);
-//  servo[1] = SVRANGE(B_INIT);
-//  servo[2] = SVRANGE(C_INIT);
-//  board.SyncServomotors(port, servo, 3, 0);
 
   count = 0;
   count_heni = 0;
@@ -411,32 +347,6 @@ unsigned long choose_parents(void) {
 void crossing(void) {
   unsigned long front, behind;
   pos = random(GENE_LEN * 3 - 1);
-//  switch (pos) {
-//    case 0:
-//      front = 0x8080; //10000000
-//      break;
-//    case 1:
-//      front = 0xc0c0; //11000000
-//      break;
-//    case 2:
-//      front = 0xe0e0; //11100000
-//      break;
-//    case 3:
-//      front = 0xf0f0; //11110000
-//      break;
-//    case 4:
-//      front = 0xf8f8; //11111000
-//      break;
-//    case 5:
-//      front = 0xfcfc; //11111100
-//      break;
-//    case 6:
-//      front = 0xfefe; //11111110
-//      break;
-//    default:
-//      Serial.println("crossing error");
-//      break;
-//  }
   front = pow(2, GENE_LEN * 3) - pow(2, pos);
   behind = ~ front;
   behind = 0b00000000111111111111111111111111 & behind;
@@ -502,291 +412,11 @@ byte choose_worst(void) {
 
 void setup() {
   randomSeed(analogRead(0));
-//  resetTimer();
   artecRobotSetup();
   artecRobotMain();
 }
 
 void loop() {}
-
-// --------------------------------------------
-// 概要    : リストからの削除処理
-// 引数    : struct _cell_t *p  リストのポインタ
-//         : int pos            リストから削除する位置
-// 戻り値  : 成功：0, エラー：-1
-// --------------------------------------------
-//int listDelete(struct cell_t* p, int pos)
-//{
-//  // 削除位置が0以下の場合、エラーを返す(何もしない)
-//  if (pos <= 0) { return (-1); }
-//  // 削除位置がリストの長さよりも大きい場合、エラーを返す(何もしない)
-//  int l = listLength(p);        // リスト長を取得
-//  if (l < pos) { return (-1); }
-//
-//  cell_t *target, *before;      // 削除する要素とその前の要素
-//  target = p->next;             // 先頭の次の要素を設定
-//  before = NULL;
-//  if (target == NULL) return (-1);  // 既に削除する要素がない場合、エラーを返す
-//  // 削除対象となる要素に移動する
-//  before = p;
-//  for (int i = 0;i < pos-1;i++) {
-//    if (target->next == NULL) return (-1);  // 削除対象となる要素がない場合、エラーを返す
-//    before = target;        // 削除対象となる要素の一つ前の要素を退避
-//    target = target->next;  // 削除対象となる要素の更新
-//  }
-//  // 削除対象となる要素が存在する場合
-//  before->next = target->next;  // 対象の一つ前の要素に対象の次の要素を設定
-//  delete target;  // 対象を削除
-//  return(0);
-//}
-//
-//// --------------------------------------------
-//// 概要    : リストへの追加処理
-//// 引数    : struct _cell_t *p  リストのポインタ
-////         : int    data        追加データ
-//// 戻り値  : 成功：0, エラー：-1
-//// --------------------------------------------
-//int listAdd(struct cell_t* p, float data)
-//{
-//  cell_t *elm, *last;
-//  // リスト要素の確保
-//  elm = new cell_t;
-//  // 要素の確保に失敗した場合
-//  if(elm == NULL) {
-//    // エラーを返す
-//    return(-1);
-//  }
-//  // lastにリストの終端を設定
-//  last = p;
-//  for (;;) {
-//    if (last->next == NULL) break;
-//    last = last->next;
-//  }
-//  // リストの終端に追加する要素の設定
-//  elm->data = data;
-//  elm->next = NULL;
-//  last->next = elm;
-//  return(0);
-//}
-//
-//// --------------------------------------------
-//// 概要    : リスト長の取得
-//// 引数    : struct _cell_t *p  リストのポインタ
-//// 戻り値  : リスト長
-//// --------------------------------------------
-//int listLength(struct cell_t* p)
-//{
-//  struct cell_t *last;
-//  // リストの終端に移動
-//  last = p;
-//  int length = 0;
-//  for (;;) {
-//    if (last->next == NULL) break;
-//    last = last->next;
-//    length++;
-//  }
-//  // リストの終端に追加する要素の設定
-//  return(length);
-//}
-//
-//// --------------------------------------------
-//// 概要    : リスト要素の取得
-//// 引数    : struct _cell_t *p  リストのポインタ
-////         : int    pos         リスト要素の取得位置
-//// 戻り値  : リスト要素、要素が存在しない場合は、0を返す
-//// --------------------------------------------
-//float listItem(struct cell_t *p, int pos)
-//{
-//  // 取得位置が0以下の場合、0を返す
-//  if (pos <= 0) { return (0); }
-//  // 取得位置がリストの長さよりも大きい場合、0を返す
-//  int l = listLength(p);    // リスト長を取得
-//  if (l < pos) { return (0); }
-//
-//  struct cell_t *target;    // 取得する要素
-//  target = p;               // 先頭の要素を設定
-//  // 取得対象となる要素に移動する
-//  for (int i = 0;i < pos;i++) {
-//    target = target->next;  // 取得対象となる要素の更新
-//  }
-//  return target->data;
-//}
-//
-//// --------------------------------------------
-//// 概要    : リストへの挿入処理
-//// 引数    : struct _cell_t *p   リストのポインタ
-////         : int pos             挿入する位置
-////         : float data          挿入するデータ
-//// 戻り値  : 成功：0, エラー：-1
-//// --------------------------------------------
-//int listInsert(struct cell_t *p, int pos, float data)
-//{
-//  // 挿入位置が0以下の場合、エラーを返す(何もしない)
-//  if (pos <= 0) { return (-1); }
-//  // 挿入位置がリストの長さ+1よりも大きい場合、エラーを返す(何もしない)
-//  int l = listLength(p);  // リスト長を取得
-//  if (l+1 < pos) { return (-1); }
-//  // 挿入位置がリストの終端の場合
-//  if (l+1 == pos) {
-//    // リストの終端に追加する
-//    listAdd(p, data);
-//    return (0);
-//  }
-//
-//  struct cell_t *item, *target, *before;  // 挿入する要素、挿入する位置の要素とその前の要素
-//  // リスト要素の確保
-//  item = new cell_t;
-//  // 要素の確保に失敗した場合、エラーを返す(何もしない)
-//  if(item == NULL) { return(-1); }
-//
-//  target = p;
-//  // 挿入対象となる要素に移動する
-//  for (int i = 0;i < pos;i++) {
-//    before = target;        // 挿入対象となる要素の一つ前の要素を退避
-//    target = target->next;  // 挿入対象となる要素の更新
-//  }
-//  // 挿入対象となる要素が存在する場合
-//  item->data = data;    // 要素のデータの設定
-//  item->next = target;  // 次の要素を設定
-//  before->next = item;  // 1つ前の要素に対象の次の要素を設定
-//  return(0);
-//}
-//
-//// --------------------------------------------
-//// 概要    : リストの要素の置換処理
-//// 引数    : struct _cell_t *p  リストのポインタ
-////         : int pos            置換する位置
-////         : float data         置換するデータ
-//// 戻り値  : 成功：0, エラー：-1
-//// --------------------------------------------
-//int listReplace(struct cell_t *p, int pos, float data)
-//{
-//  // 置換位置が0以下の場合、エラーを返す(何もしない)
-//  if (pos <= 0) { return (-1); }
-//  // 置換位置がリストの長さよりも大きい場合、エラーを返す(何もしない)
-//  int l = listLength(p);  // リスト長を取得
-//  if (l < pos) { return (-1); }
-//
-//  struct cell_t *target;  // 置換する要素
-//
-//  target = p;
-//  // 置換対象となる要素に移動する
-//  for (int i = 0;i < pos;i++) {
-//    target = target->next;  // 置換対象となる要素の更新
-//  }
-//  // 置換対象となる要素が存在する場合
-//  target->data = data;      // 要素のデータの設定
-//  return(0);
-//}
-//
-//// --------------------------------------------
-//// 概要    : リストの要素に指定データが存在するか？
-//// 引数    : struct _cell_t *p  リストのポインタ
-////         : float data         検索するデータ
-//// 戻り値  : 存在する：true, 存在しない：false
-//// --------------------------------------------
-//bool listIsContain(struct cell_t *p, float data)
-//{
-//  struct cell_t *elm = p;
-//  // リストの全要素に対してdataを検索する
-//  for (;;) {
-//    // リスト終端に到達したらbreak
-//    if (elm->next == NULL) break;
-//    // リストの次の要素を取得
-//    elm = elm->next;
-//    // リストにdataが存在する場合、trueを返す
-//    if (elm->data == data) return true;
-//  }
-//  // リストにdataが存在しない場合、falseを返す
-//  return false;
-//}
-//
-//// --------------------------------------------
-//// 概要    : 丸め処理
-////         : float  arg    引数
-//// 戻り値  : 演算結果
-// --------------------------------------------
-int scratchRound(float arg)
-{
-  return round(arg);
-}
-//
-//// --------------------------------------------
-//// 概要    : 算術演算処理
-//// 引数    : byte   opeID  操作ID
-////         : float  arg    引数
-//// 戻り値  : 演算結果
-//// --------------------------------------------
-//float math(byte opeID, float arg)              // 算術処理
-//{
-//  float result;
-//  switch (opeID) {
-//    case SQRT:
-//      result = sqrt(arg);
-//    break;
-//    case ABS:     // |n|
-//      result = abs(arg);
-//    break;
-//    case SIN:     // sin(n)
-//    {
-//      float rad = arg * PI / 180.0;
-//      result = sin(rad);
-//    }
-//    break;
-//    case COS:     // cos(n)
-//    {
-//      float rad = arg * PI / 180.0;
-//      result = cos(rad);
-//    }
-//    break;
-//    case TAN:     // tan(n)
-//    {
-//      float rad = arg * PI / 180.0;
-//      result = tan(rad);
-//    }
-//    break;
-///*
-//    case ASIN:    // arcsin(n)
-//    case ACOS:    // arccos(n)
-//    case ATAN:    // arctan(n)
-//    break;
-//*/
-//    case LN:      // loge
-//      result = log(arg);
-//    break;
-//    case LOG:     // log10
-//      result = log10(arg);
-//    break;
-//    case POWE:    // e^
-//      result = exp(arg);
-//    break;
-//    case POW10:   // 10^
-//      result = pow(10, arg);
-//    break;
-//    default:
-//      result = 0;
-//    break;
-//
-//  }
-//  return result;
-//}
-
-// --------------------------------------------
-// 概要    : タイマー値の取得
-// 戻り値  : タイマーの値(sec)
-// --------------------------------------------
-//float getTimer()
-//{
-//  return ((millis() - StartTime) / 1000.0);
-//}
-
-// --------------------------------------------
-// 概要    : タイマー値のリセット
-// --------------------------------------------
-//void resetTimer()
-//{
-//  StartTime = millis();
-//}
 
 // ---------------------------------------------------------------------
 // 概要    : 超音波センサーの値を取得
